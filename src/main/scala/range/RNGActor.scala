@@ -1,4 +1,4 @@
-package com.example
+package range
 
 import akka.actor.Actor
 import spray.routing._
