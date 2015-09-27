@@ -1,9 +1,8 @@
-package range
+package range.service
 
 import org.specs2.mutable.Specification
+import spray.http.StatusCodes._
 import spray.testkit.Specs2RouteTest
-import spray.http._
-import StatusCodes._
 
 class RNGServiceSpec extends Specification with Specs2RouteTest with RNGService {
   def actorRefFactory = system

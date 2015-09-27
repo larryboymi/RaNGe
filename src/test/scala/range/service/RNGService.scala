@@ -1,4 +1,4 @@
-package range
+package range.service
 
 import spray.http.MediaTypes._
 import spray.routing.HttpService
