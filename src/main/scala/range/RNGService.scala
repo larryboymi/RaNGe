@@ -3,9 +3,6 @@ package range
 import spray.http.MediaTypes._
 import spray.routing.HttpService
 
-/**
- * Created by loande on 9/26/15.
- */
 trait RNGService extends HttpService {
 
   val rngRoute =

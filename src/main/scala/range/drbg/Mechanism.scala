@@ -1,15 +1,44 @@
 package range.drbg
 
+import range.RangeConfig
+import scala.collection.mutable
 import scala.concurrent.Future
 
-/**
- * Created by loande on 9/26/15.
- */
 trait Mechanism {
   val instantiated = false
-  val seed : Int
+  val seed : Seed
+  val usedPersonalizationStrings: mutable.TreeSet[String]
+  val numRequests: Int
 
-  def instantiate(seed: Int)
+  def instantiate(instantiatedSecurityStrength: SecurityStrength,
+                  personalizationString: Option[String]): Future[Unit] = {
+    if (!validateSecurityStrength(instantiatedSecurityStrength))
+      Future.failed(new IllegalArgumentException(s"Security strength requested is greater than the maximum supported by this mechanism (${RangeConfig.maxSecurityBits})."))
+    if (personalizationString.isDefined && !validatePersonalizationString(personalizationString.get))
+      Future.failed(new IllegalArgumentException(s"Personalization string length is greater than the maximum supported by this mechanism (${RangeConfig.maxPersonalizationStringLength})."))
+
+    instantiateAlgo(obtainEntropyInput(instantiatedSecurityStrength.bitValue), obtainNonce, personalizationString, instantiatedSecurityStrength)
+  }
+
+  private def instantiateAlgo(entInput: Entropy, nonce: Option[String],
+                              personalizationString: Option[String], securityStrength: SecurityStrength): Future[Unit] = {
+    Future.successful() //TODO
+  }
+
+  private def obtainEntropyInput(min_entropy: Int, min_length: Int, max_length: Int): Future[Entropy] =
+    Future.successful(Entropy(1)) //TODO
+
+  private def obtainNonce: Option[String] = Some("") //TODO
+
+  private def validateSecurityStrength(strength: SecurityStrength) =
+    SecurityStrength.StrengthOrdering.gt(RangeConfig.maxSecurityBits, strength)
+
+  private def validatePersonalizationString(personalizationString: String) = {
+    val valid = !usedPersonalizationStrings.contains(personalizationString) && personalizationString.length < RangeConfig.maxPersonalizationStringLength
+    usedPersonalizationStrings += personalizationString
+    valid
+  }
+
   def uninstantiate
   def generate : Future[Int] =
     if (instantiated)
@@ -19,9 +48,8 @@ trait Mechanism {
 
   def heathTest
   //optional
-  def reseed(newSeed: Int) : Future[Boolean] =
-    if (newSeed == seed)
-      Future.failed(InvalidSeed("The seed used to reseed is the same as the initial seed."))
-    else
-      Future.successful(true)
+  def reseed(additionalInput: String) : Future[Boolean] = {
+    val entropy = obtainEntropyInput // Prediction resistance
+    Future.successful(true) // TODO
+  }
 }
